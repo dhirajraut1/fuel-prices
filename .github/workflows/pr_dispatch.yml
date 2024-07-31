@@ -28,7 +28,7 @@ EOF
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: your-username/nfc-t
+          repository: nfc-keela/nfc-test
           event-type: pr-updated
 
       - name: Wait for NFC-T Workflow Completion
