@@ -12,48 +12,29 @@ jobs:
       - name: Create Check Run
         id: create_check_run
         run: |
-          response=$(curl -s -X POST -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs -d @- <<EOF
-          {
-            "name": "NFC-T Workflow",
-            "head_sha": "${{ github.event.pull_request.head.sha }}",
-            "status": "in_progress",
-            "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-EOF
-          )
+          response=$(curl -s -X POST -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs -d '{"name":"NFC-T Workflow","head_sha":"'${{ github.event.pull_request.head.sha }}'","status":"in_progress","started_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}')
           check_run_id=$(echo "$response" | jq -r '.id')
           echo "CHECK_RUN_ID=$check_run_id" >> $GITHUB_ENV
 
       - name: Trigger workflow on NFC-T
-        uses: peter-evans/repository-dispatch@v2
+        uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DISPATCH_TOKEN }}
-          repository: nfc-keela/nfc-test
+          repository: 'keela-co/nfc-test' 
           event-type: pr-updated
 
       - name: Wait for NFC-T Workflow Completion
         run: |
           echo "Waiting for NFC-T workflow completion"
-          sleep 60 # Adjust the sleep time as needed or implement a loop to poll for status
+          sleep 60 # Consider implementing a polling mechanism for better reliability
 
       - name: Update Check Run to Completed
         if: success()
         run: |
-          curl -s -X PATCH -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs/${{ env.CHECK_RUN_ID }} -d @- <<EOF
-          {
-            "status": "completed",
-            "conclusion": "success",
-            "completed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-EOF
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs/${{ env.CHECK_RUN_ID }} -d '{"status":"completed","conclusion":"success","completed_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
 
       - name: Update Check Run to Failed
         if: failure()
         run: |
-          curl -s -X PATCH -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs/${{ env.CHECK_RUN_ID }} -d @- <<EOF
-          {
-            "status": "completed",
-            "conclusion": "failure",
-            "completed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-          }
-EOF
+          curl -s -X PATCH -H "Authorization: token ${{ secrets.DISPATCH_TOKEN }}" -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/${{ github.repository }}/check-runs/${{ env.CHECK_RUN_ID }} -d '{"status":"completed","conclusion":"failure","completed_at":"'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
+          
