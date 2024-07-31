@@ -1,0 +1,16 @@
+name: Dispatch to NFC-Test
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger workflow on NFC-Test
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DISPATCH_TOKEN }}
+          repository: keela-co/nfc-test
+          event-type: pr-updated
