@@ -2,7 +2,7 @@ name: Dispatch to NFC-Test
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [closed]
 
 jobs:
   dispatch:
