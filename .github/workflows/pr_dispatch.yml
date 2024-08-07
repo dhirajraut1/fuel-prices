@@ -2,7 +2,7 @@ name: Dispatch to NFC-T and Monitor
 
 on:
   pull_request:
-    types: [opened, edited, reopened, synchronize]
+    types: [closed]
 
 jobs:
   dispatch-and-check:
